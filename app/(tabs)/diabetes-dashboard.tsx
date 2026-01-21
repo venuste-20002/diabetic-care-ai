@@ -15,7 +15,7 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { ArrowLeft, Heart, Droplets, Pill, Activity, Calendar as CalendarIcon, Plus, TrendingUp, Clock, Target, Zap, X, CircleCheck as CheckCircle, Bell, ChartBar as BarChart3, Award, Settings, Download, Share, TriangleAlert as AlertTriangle, Trash2 } from 'lucide-react-native';
-import { Calendar, LocaleConfig } from 'react-native-calendars'; // Import Calendar and LocaleConfig
+
 import { useAuth } from '@/context/AuthContext';
 import {
   getDailyTasks,
@@ -694,6 +694,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.05,
     shadowRadius: 4,
     elevation: 2,
+    boxShadow: '0 1px 4px rgba(0, 0, 0, 0.05)',
   },
   metricNumber: {
     fontSize: 24,
@@ -808,6 +809,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.05,
     shadowRadius: 4,
     elevation: 2,
+    boxShadow: '0 1px 4px rgba(0, 0, 0, 0.05)',
   },
   tipText: {
     flex: 1,
@@ -915,6 +917,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.05,
     shadowRadius: 4,
     elevation: 2,
+    boxShadow: '0 1px 4px rgba(0, 0, 0, 0.05)',
   },
   readingHeader: {
     flexDirection: 'row',
@@ -1106,5 +1109,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.05,
     shadowRadius: 4,
     elevation: 2,
+    boxShadow: '0 1px 4px rgba(0, 0, 0, 0.05)',
   },
 });
