@@ -218,59 +218,91 @@ class EnhancedDiabetesNLP:
         
         return list(set(diabetes_keywords))
 
+    def generate_recommendations(self, insights: Dict, intent: str, emotion: str) -> List[str]:
+        """Generate personalized recommendations based on analysis"""
+        recommendations = []
+
+        if intent == 'medication_inquiry':
+            recommendations.append("Please consult your doctor before making any medication changes.")
+        if insights.get('glucose_readings'):
+            high_readings = [r for r in insights['glucose_readings'] if r > 180]
+            if high_readings:
+                recommendations.append("High glucose readings detected. Consider checking with your healthcare provider.")
+        if insights.get('symptom_flags'):
+            recommendations.append("Symptoms detected. Monitor closely and consult your doctor if they persist.")
+        if emotion in ['fear', 'sadness']:
+            recommendations.append("If you're feeling anxious or down, consider talking to a support group or counselor.")
+        if not recommendations:
+            recommendations.append("Keep monitoring your health and maintain a healthy lifestyle.")
+
+        return recommendations
+
     def analyze(self, text: str, user_context: Optional[Dict] = None) -> AnalysisResult:
         """Main analysis method that combines all NLP features"""
         try:
             # Preprocess text
             cleaned_text = self.preprocess_text(text)
-            
+
             # Extract entities
             entities = self.extract_entities(cleaned_text)
-            
+
             # Sentiment analysis
             sentiment_scores = self.analyze_sentiment(cleaned_text)
             combined_sentiment = sentiment_scores['combined_score']
-            
+
             # Emotion detection
             emotion = self.detect_emotion(cleaned_text)
-            
-           <thinking>
-I have reviewed the AI chat backend in enhanced_main.py. It has a DiabetesAIAnalyzer class that analyzes user messages by detecting keywords, extracting numerical readings, performing basic sentiment analysis, and calculating urgency. It then generates responses based on detected categories with advice templates.
 
-The frontend chat component (AIChat.tsx) sends user messages to the backend endpoint /ai-chat and displays the AI response.
+            # Extract keywords
+            keywords = self.extract_keywords(cleaned_text)
 
-To improve the "word analysis" as the user requested, possible enhancements include:
-- Expanding keyword detection with synonyms or NLP techniques (e.g., lemmatization)
-- Adding more advanced natural language understanding (e.g., intent classification)
-- Improving sentiment analysis with a more robust library or model
-- Adding entity recognition (e.g., recognizing medication names, symptoms)
-- Using contextual embeddings or pretrained language models for better understanding
+            # Classify intent
+            intent = self.classify_intent(cleaned_text, entities)
 
-I will now create a detailed plan for improving the word analysis in the chat system, focusing on enhancing the backend analyzer and possibly updating the frontend to support richer responses.
+            # Extract diabetes insights
+            diabetes_insights = self.extract_diabetes_insights(cleaned_text, entities)
 
-Dependent files to edit:
-- glucogard/ai_engine/enhanced_main.py (improve DiabetesAIAnalyzer)
-- glucogard/components/AIChat.tsx (if needed, to display new info or handle new response fields)
+            # Determine urgency level
+            urgency_level = 'low'
+            if diabetes_insights.get('urgency_indicators'):
+                if 'critical' in diabetes_insights['urgency_indicators']:
+                    urgency_level = 'critical'
+                elif 'high' in diabetes_insights['urgency_indicators']:
+                    urgency_level = 'high'
+                elif 'medium' in diabetes_insights['urgency_indicators']:
+                    urgency_level = 'medium'
 
-Follow-up steps:
-- Implement improvements in enhanced_main.py
-- Test with sample messages
-- Update frontend if needed
-- Verify end-to-end chat functionality
+            # Generate recommendations
+            recommendations = self.generate_recommendations(diabetes_insights, intent, emotion)
 
-I will now present this plan for your confirmation before proceeding.
-</thinking>
+            # Calculate confidence (simple heuristic)
+            confidence = min(1.0, len(entities) * 0.1 + len(keywords) * 0.05 + abs(combined_sentiment) * 0.2)
 
-<ask_followup_question>
-<question>
-I have analyzed your chat system's current word analysis implementation. To improve it, I propose enhancing the backend DiabetesAIAnalyzer with more advanced NLP techniques such as expanded keyword detection, better sentiment analysis, and possibly entity recognition. We may also update the frontend AIChat component if needed to support richer responses.
-
-The plan includes:
-- Enhancing keyword detection and categories in enhanced_main.py
-- Improving sentiment analysis logic
-- Adding entity recognition for medications, symptoms, etc.
-- Optionally updating AIChat.tsx to display new insights or confidence scores
-
-Please confirm if you want me to proceed with this plan or provide any specific improvements you want.
-</question>
-</ask_followup_question>
+            return AnalysisResult(
+                original_text=text,
+                cleaned_text=cleaned_text,
+                sentiment_score=combined_sentiment,
+                emotion=emotion,
+                confidence=confidence,
+                entities=entities,
+                keywords=keywords,
+                intent=intent,
+                urgency_level=urgency_level,
+                diabetes_specific_insights=diabetes_insights,
+                recommendations=recommendations
+            )
+        except Exception as e:
+            logger.error(f"Error analyzing text: {e}")
+            return AnalysisResult(
+                original_text=text,
+                cleaned_text=text,
+                sentiment_score=0.0,
+                emotion='neutral',
+                confidence=0.0,
+                entities=[],
+                keywords=[],
+                intent='general_chat',
+                urgency_level='low',
+                diabetes_specific_insights={},
+                recommendations=['Please consult a healthcare professional for personalized advice.']
+            )
