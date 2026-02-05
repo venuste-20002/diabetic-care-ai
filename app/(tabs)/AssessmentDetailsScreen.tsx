@@ -47,8 +47,8 @@ const { width, height } = Dimensions.get('window');
 interface AssessmentDetails {
   id: string;
   answers: any;
-  status: string;
-  submitted_at: string;
+  status: string | null;
+  submitted_at: string | null;
   risk_predictions?: {
     risk_score: number;
     risk_category: string;
@@ -56,8 +56,8 @@ interface AssessmentDetails {
   }[];
   recommendations?: {
     content: string;
-    type: 'lifestyle' | 'clinical';
-    created_at: string;
+    type: string;
+    created_at: string | null;
   }[];
 }
 
@@ -128,11 +128,13 @@ export default function AssessmentDetailsScreen() {
 
       if (error) {
         console.error('Error fetching assessment details:', error);
+        setAssessment(null);
       } else {
         setAssessment(data);
       }
     } catch (error) {
       console.error('Unexpected error:', error);
+      setAssessment(null);
     } finally {
       setLoading(false);
     }
@@ -314,7 +316,7 @@ export default function AssessmentDetailsScreen() {
               <View style={styles.statCard}>
                 <Calendar size={24} color="#0066CC" />
                 <Text style={styles.statNumber}>
-                  {formatDate(assessment.submitted_at).split(',')[0]}
+                  {assessment.submitted_at ? formatDate(assessment.submitted_at).split(',')[0] : 'N/A'}
                 </Text>
                 <Text style={styles.statLabel}>Assessment Date</Text>
               </View>
@@ -370,7 +372,7 @@ export default function AssessmentDetailsScreen() {
                   </Text>
                 </View>
                 <Text style={styles.statusDescription}>
-                  {assessment.status === 'reviewed' 
+                  {assessment.status === 'reviewed'
                     ? 'Your assessment has been reviewed by a healthcare professional. Check the recommendations tab for personalized advice.'
                     : 'Your assessment is currently being reviewed by our healthcare team. You will be notified once the review is complete.'
                   }
@@ -460,7 +462,7 @@ export default function AssessmentDetailsScreen() {
                           {rec.type === 'lifestyle' ? 'Lifestyle' : 'Clinical'} Recommendation
                         </Text>
                         <Text style={styles.recommendationDate}>
-                          {formatDate(rec.created_at)}
+                          {rec.created_at ? formatDate(rec.created_at) : 'N/A'}
                         </Text>
                       </View>
                     </View>

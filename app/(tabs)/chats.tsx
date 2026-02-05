@@ -41,10 +41,10 @@ export default function ChatsScreen() {
   }, [user]);
 
   useEffect(() => {
-    if (searchQuery.trim()) {
+    if (searchQuery.trim() && user) {
       setFilteredChats(
-        chats.filter(chat => 
-          user?.role === 'doctor' 
+        chats.filter(chat =>
+          user.role === 'doctor'
             ? chat.patientName.toLowerCase().includes(searchQuery.toLowerCase())
             : chat.doctorName.toLowerCase().includes(searchQuery.toLowerCase())
         )
@@ -55,9 +55,11 @@ export default function ChatsScreen() {
   }, [searchQuery, chats, user]);
 
   const loadChats = async () => {
+    if (!user) return;
+
     setLoading(true);
     try {
-      if (user?.role === 'doctor') {
+      if (user.role === 'doctor') {
         // Get doctor ID
         const { data: doctorData } = await supabase
           .from('doctors')
@@ -73,23 +75,13 @@ export default function ChatsScreen() {
         // Get chats for doctor
         const { data: chatData, error } = await supabase
           .from('chats')
-          .select(`
-            id,
-            doctor_id,
-            patient_id,
-            created_at,
-            patients!inner (
-              profiles!inner (
-                full_name
-              )
-            )
-          `)
+          .select('id, doctor_id, patient_id, created_at')
           .eq('doctor_id', doctorData.id)
           .order('created_at', { ascending: false });
 
         if (error) throw error;
 
-        // Get last message for each chat
+        // Get last message for each chat and patient info
         const chatsWithMessages = await Promise.all(
           (chatData || []).map(async (chat) => {
             const { data: messages } = await supabase
@@ -99,14 +91,21 @@ export default function ChatsScreen() {
               .order('created_at', { ascending: false })
               .limit(1);
 
+            // Get patient profile
+            const { data: patientProfile } = await supabase
+              .from('profiles')
+              .select('full_name')
+              .eq('id', chat.patient_id)
+              .single();
+
             const lastMessage = messages && messages.length > 0 ? messages[0] : null;
 
             return {
               id: chat.id,
               patientId: chat.patient_id,
               doctorId: chat.doctor_id,
-              patientName: chat.patients.profiles.full_name,
-              doctorName: user.full_name,
+              patientName: patientProfile?.full_name || 'Unknown Patient',
+              doctorName: user.full_name || 'Doctor',
               lastMessage: lastMessage?.message || null,
               lastMessageTime: lastMessage?.created_at || chat.created_at,
               unreadCount: 0, // This would need a proper implementation
@@ -131,23 +130,13 @@ export default function ChatsScreen() {
         // Get chats for patient
         const { data: chatData, error } = await supabase
           .from('chats')
-          .select(`
-            id,
-            doctor_id,
-            patient_id,
-            created_at,
-            doctors!inner (
-              profiles!inner (
-                full_name
-              )
-            )
-          `)
+          .select('id, doctor_id, patient_id, created_at')
           .eq('patient_id', patientData.id)
           .order('created_at', { ascending: false });
 
         if (error) throw error;
 
-        // Get last message for each chat
+        // Get last message for each chat and doctor info
         const chatsWithMessages = await Promise.all(
           (chatData || []).map(async (chat) => {
             const { data: messages } = await supabase
@@ -157,14 +146,21 @@ export default function ChatsScreen() {
               .order('created_at', { ascending: false })
               .limit(1);
 
+            // Get doctor profile
+            const { data: doctorProfile } = await supabase
+              .from('profiles')
+              .select('full_name')
+              .eq('id', chat.doctor_id)
+              .single();
+
             const lastMessage = messages && messages.length > 0 ? messages[0] : null;
 
             return {
               id: chat.id,
               patientId: chat.patient_id,
               doctorId: chat.doctor_id,
-              patientName: user.full_name,
-              doctorName: chat.doctors.profiles.full_name,
+              patientName: user.full_name || 'Patient',
+              doctorName: doctorProfile?.full_name || 'Unknown Doctor',
               lastMessage: lastMessage?.message || null,
               lastMessageTime: lastMessage?.created_at || chat.created_at,
               unreadCount: 0, // This would need a proper implementation

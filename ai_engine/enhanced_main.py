@@ -81,10 +81,9 @@ class SymptomLog(BaseModel):
 
 class EducationalContent(BaseModel):
     topic: str
-    content_type: str = "article"  # article, video, quiz
-    difficulty: str = "beginner"  # beginner, intermediate, advanced
+    content_type: str = "article" 
+    difficulty: str = "beginner" 
 
-# Basic AI analyzer (existing)
 class DiabetesAIAnalyzer:
     def __init__(self):
         self.keywords = {
@@ -333,16 +332,12 @@ async def analyze_text(chat_message: ChatMessage):
 async def generate_meal_plan(request: MealPlanRequest):
     """Generate personalized meal plan using AI"""
     try:
-        # AI-powered meal planning logic
+      
         base_calories = request.calories_target or 2000
-
-        # Adjust calories based on diabetes type
         if request.diabetes_type == "type1":
-            base_calories = int(base_calories * 1.1)  # Slightly higher for Type 1
+            base_calories = int(base_calories * 1.1) 
         elif request.diabetes_type == "gestational":
-            base_calories = int(base_calories * 0.9)  # Slightly lower for gestational
-
-        # Meal distribution (breakfast 25%, lunch 35%, dinner 30%, snacks 10%)
+            base_calories = int(base_calories * 0.9)  
         meals = {
             "breakfast": {
                 "calories": int(base_calories * 0.25),
