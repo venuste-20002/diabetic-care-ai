@@ -1,18 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  SafeAreaView,
-  ScrollView,
-  TouchableOpacity,
-  Modal,
-  TextInput,
-  Alert,
-  ActivityIndicator,
-  Dimensions,
-  Platform,
-} from 'react-native';
+import {View,Text,StyleSheet,SafeAreaView,ScrollView,TouchableOpacity,Modal,TextInput,Alert,ActivityIndicator,Dimensions,Platform,} from 'react-native';
 import { useRouter } from 'expo-router';
 import { ArrowLeft, Heart, Droplets, Pill, Activity, Calendar as CalendarIcon, Plus, TrendingUp, Clock, Target, Zap, X, CircleCheck as CheckCircle, Bell, ChartBar as BarChart3, Award, Settings, Download, Share, TriangleAlert as AlertTriangle, Trash2 } from 'lucide-react-native';
 
