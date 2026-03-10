@@ -161,7 +161,8 @@ The research portal offers:
    - Implement rate limiting for API endpoints
    - Configure security headers
 
-### Authentication for Web Dashboards
+### Authentication for Web Dashboards 
+the user need the 
 
 The web dashboards use a dual authentication system:
 
